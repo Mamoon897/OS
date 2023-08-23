@@ -1,74 +1,118 @@
-/*c scan program */
 #include <iostream>
-#include <cstdlib> // for abs function
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
-int main()
-{
-    int queue[20], n, head, i, j, k, seek = 0, max, diff, temp, queue1[20], queue2[20],
-        temp1 = 0, temp2 = 0;
-    float avg;
+using namespace std;
 
-    std::cout << "Enter the max range of disk: ";
-    std::cin >> max;
-    std::cout << "Enter the initial head position: ";
-    std::cin >> head;
-    std::cout << "Enter the size of the queue request: ";
-    std::cin >> n;
-    std::cout << "Enter the queue of disk positions to be read: ";
-    for (i = 1; i <= n; i++)
-    {
-        std::cin >> temp;
-        if (temp >= head)
-        {
-            queue1[temp1] = temp;
-            temp1++;
-        }
-        else
-        {
-            queue2[temp2] = temp;
-            temp2++;
-        }
-    }
-    for (i = 0; i < temp1 - 1; i++)
-    {
-        for (j = i + 1; j < temp1; j++)
-        {
-            if (queue1[i] > queue1[j])
-            {
-                temp = queue1[i];
-                queue1[i] = queue1[j];
-                queue1[j] = temp;
-            }
+int main() {
+    int HeadPosition;
+    cout << "Enter the initial head position: ";
+    cin >> HeadPosition;
+    cin.ignore();
+
+    int n;
+    cout << "Enter total number of sequences: ";
+    cin >> n;
+
+    vector<int> locations(n);
+    vector<int> left;
+    vector<int> right;
+    vector<int> seekTime;
+    int totalSeekTime = 0;
+    int SeekTime = 0;
+
+    cout << "Enter the sequence list: ";
+    for (int i = 0; i < n; i++) {
+        int num;
+        cin >> num;
+        if (num <= HeadPosition) {
+            left.push_back(num);
+        } else {
+            right.push_back(num);
         }
     }
-    for (i = 0; i < temp2 - 1; i++)
-    {
-        for (j = i + 1; j < temp2; j++)
-        {
-            if (queue2[i] > queue2[j])
-            {
-                temp = queue2[i];
-                queue2[i] = queue2[j];
-                queue2[j] = temp;
-            }
+
+    string direction;
+    cout << "Enter the direction (left or right): ";
+    cin >> direction;
+    transform(direction.begin(), direction.end(), direction.begin(), ::tolower);
+
+    if (direction == "left") {
+        left.push_back(0);
+        sort(left.rbegin(), left.rend());
+        sort(right.begin(), right.end());
+
+        for (int j = 0; j < left.size(); j++) {
+            SeekTime = abs(HeadPosition - left[j]);
+            totalSeekTime += SeekTime;
+            seekTime.push_back(SeekTime);
+            HeadPosition = left[j];
         }
+
+        for (int j = 0; j < right.size(); j++) {
+            SeekTime = abs(HeadPosition - right[j]);
+            totalSeekTime += SeekTime;
+            seekTime.push_back(SeekTime);
+            HeadPosition = right[j];
+        }
+
+        int k = 0;
+        cout << "\nRequest \tSeek Time" << endl;
+        for (int i = 0; i < left.size(); i++) {
+            cout << left[i] << "\t\t" << seekTime[k] << endl;
+            k++;
+        }
+
+        cout << "---------Changed Direction---------" << endl;
+
+        for (int i = 0; i < right.size(); i++) {
+            cout << right[i] << "\t\t" << seekTime[k] << endl;
+            k++;
+        }
+
+        cout << "Total Seek Time: " << totalSeekTime << endl;
+        cout << "Throughput: " << static_cast<float>(n) / totalSeekTime << endl;
+
+    } else if (direction == "right") {
+        right.push_back(200);
+        sort(right.begin(), right.end());
+        sort(left.rbegin(), left.rend());
+
+        for (int j = 0; j < right.size(); j++) {
+            SeekTime = abs(HeadPosition - right[j]);
+            totalSeekTime += SeekTime;
+            seekTime.push_back(SeekTime);
+            HeadPosition = right[j];
+        }
+
+        for (int j = 0; j < left.size(); j++) {
+            SeekTime = abs(HeadPosition - left[j]);
+            totalSeekTime += SeekTime;
+            seekTime.push_back(SeekTime);
+            HeadPosition = left[j];
+        }
+
+        int k = 0;
+        cout << "\nRequest \tSeek Time" << endl;
+        for (int i = 0; i < right.size(); i++) {
+            cout << right[i] << "\t\t" << seekTime[k] << endl;
+            k++;
+        }
+
+        cout << "---------Changed Direction---------" << endl;
+
+        for (int i = 0; i < left.size(); i++) {
+            cout << left[i] << "\t\t" << seekTime[k] << endl;
+            k++;
+        }
+
+        cout << "Total Seek Time: " << totalSeekTime << endl;
+        cout << "Throughput: " << static_cast<float>(n) / totalSeekTime << endl;
+    } else {
+        cout << "Invalid direction entered. Please choose either 'left' or 'right'." << endl;
+        return 0;
     }
-    for (i = 1, j = 0; j < temp1; i++, j++)
-        queue[i] = queue1[j];
-    queue[i] = max;
-    queue[i + 1] = 0;
-    for (i = temp1 + 3, j = 0; j < temp2; i++, j++)
-        queue[i] = queue2[j];
-    queue[0] = head;
-    for (j = 0; j <= n + 1; j++)
-    {
-        diff = std::abs(queue[j + 1] - queue[j]);
-        seek += diff;
-        std::cout << "Disk head moves from " << queue[j] << " to " << queue[j + 1] << " with seek " << diff << std::endl;
-    }
-    std::cout << "Total seek time is " << seek << std::endl;
-    avg = seek / static_cast<float>(n);
-    std::cout << "Average seek time is " << avg << std::endl;
+
     return 0;
 }
-
