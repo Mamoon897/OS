@@ -1,118 +1,130 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
 #include <cmath>
-
 using namespace std;
 
-int main() {
-    int HeadPosition;
-    cout << "Enter the initial head position: ";
-    cin >> HeadPosition;
-    cin.ignore();
-
-    int n;
-    cout << "Enter total number of sequences: ";
-    cin >> n;
-
-    vector<int> locations(n);
-    vector<int> left;
-    vector<int> right;
-    vector<int> seekTime;
-    int totalSeekTime = 0;
-    int SeekTime = 0;
-
-    cout << "Enter the sequence list: ";
-    for (int i = 0; i < n; i++) {
-        int num;
-        cin >> num;
-        if (num <= HeadPosition) {
-            left.push_back(num);
-        } else {
-            right.push_back(num);
+int finds(int a[], int n, int item) {
+    for (int i = 0; i <= n; i++) {
+        if (a[i] == item) {
+            return i;
         }
     }
+    return -1;
+}
 
-    string direction;
-    cout << "Enter the direction (left or right): ";
+int main() {
+    int request[51], news[51], comp, sizes, n;
+    cout << "Enter the disk size: ";
+    cin >> sizes;
+    cout << "Enter the current position of the pointer: ";
+    cin >> request[0];
+    int cp = request[0];
+    cout << "Enter the number of pending requests: ";
+    cin >> n;
+    cout << "Enter the pending request entries: ";
+    for (int i = 1; i <= n; i++) {
+        cout << "Request " << i << ": ";
+        cin >> request[i];
+    }
+
+    char direction;
+    cout << "Enter the direction of movement (L for left, R for right): ";
     cin >> direction;
-    transform(direction.begin(), direction.end(), direction.begin(), ::tolower);
 
-    if (direction == "left") {
-        left.push_back(0);
-        sort(left.rbegin(), left.rend());
-        sort(right.begin(), right.end());
-
-        for (int j = 0; j < left.size(); j++) {
-            SeekTime = abs(HeadPosition - left[j]);
-            totalSeekTime += SeekTime;
-            seekTime.push_back(SeekTime);
-            HeadPosition = left[j];
+    for (int i = 0; i <= n - 1; i++) {
+        for (int j = 0; j <= n - 1 - i; j++) {
+            if (request[j] > request[j + 1]) {
+                int temp = request[j];
+                request[j] = request[j + 1];
+                request[j + 1] = temp;
+            }
         }
+    }
+    int ind = finds(request, n, cp);
+    int i = ind, j = 0, pos1, pos2;
+    news[0] = request[ind];
+    pos1 = i + 1;
+    pos2 = i - 1;
+    j++;
+    int ctr1 = 0, ctr2 = 0;
+    for (int k = pos1; k <= n; k++) {
+        ctr1++;
+    }
+    for (int l = pos2; l >= 0; l--) {
+        ctr2++;
+    }
 
-        for (int j = 0; j < right.size(); j++) {
-            SeekTime = abs(HeadPosition - right[j]);
-            totalSeekTime += SeekTime;
-            seekTime.push_back(SeekTime);
-            HeadPosition = right[j];
+    if (direction == 'R' || direction == 'r') {
+        if (ctr1 > ctr2) {
+            for (int k = pos1; k <= n; k++) {
+                news[j] = request[k];
+                j++;
+            }
+            news[j] = sizes;
+            j++;
+            news[j] = 0;
+            j++;
+            for (int l = 0; l <= pos2; l++) {
+                news[j] = request[l];
+                j++;
+            }
+            comp = abs(cp - (sizes - 1)) + (sizes - 1) + request[pos2];
+        } else {
+            for (int l = pos2; l >= 0; l--) {
+                news[j] = request[l];
+                j++;
+            }
+            news[j] = 0;
+            j++;
+            news[j] = sizes - 1;
+            j++;
+            for (int k = n; k >= pos1; k--) {
+                news[j] = request[k];
+                j++;
+            }
+            comp = cp + (sizes - 1) + ((sizes - 1) - request[pos1]);
         }
-
-        int k = 0;
-        cout << "\nRequest \tSeek Time" << endl;
-        for (int i = 0; i < left.size(); i++) {
-            cout << left[i] << "\t\t" << seekTime[k] << endl;
-            k++;
+    } else if (direction == 'L' || direction == 'l') {
+        if (ctr2 > ctr1) {
+            for (int l = pos2; l >= 0; l--) {
+                news[j] = request[l];
+                j++;
+            }
+            news[j] = sizes;
+            j++;
+            news[j] = sizes - 1;
+            j++;
+            for (int k = n; k >= pos1; k--) {
+                news[j] = request[k];
+                j++;
+            }
+            comp = abs(cp - (sizes - 1)) + (sizes - 1) + request[pos2];
+        } else {
+            for (int l = pos2; l >= 0; l--) {
+                news[j] = request[l];
+                j++;
+            }
+            news[j] = 0;
+            j++;
+            news[j] = 100; // Replace the second "0" with "100"
+            j++;
+            for (int k = n; k >= pos1; k--) {
+                news[j] = request[k];
+                j++;
+            }
+            comp = cp + (sizes - 1) + ((sizes - 1) - request[pos1]);
         }
-
-        cout << "---------Changed Direction---------" << endl;
-
-        for (int i = 0; i < right.size(); i++) {
-            cout << right[i] << "\t\t" << seekTime[k] << endl;
-            k++;
-        }
-
-        cout << "Total Seek Time: " << totalSeekTime << endl;
-        cout << "Throughput: " << static_cast<float>(n) / totalSeekTime << endl;
-
-    } else if (direction == "right") {
-        right.push_back(200);
-        sort(right.begin(), right.end());
-        sort(left.rbegin(), left.rend());
-
-        for (int j = 0; j < right.size(); j++) {
-            SeekTime = abs(HeadPosition - right[j]);
-            totalSeekTime += SeekTime;
-            seekTime.push_back(SeekTime);
-            HeadPosition = right[j];
-        }
-
-        for (int j = 0; j < left.size(); j++) {
-            SeekTime = abs(HeadPosition - left[j]);
-            totalSeekTime += SeekTime;
-            seekTime.push_back(SeekTime);
-            HeadPosition = left[j];
-        }
-
-        int k = 0;
-        cout << "\nRequest \tSeek Time" << endl;
-        for (int i = 0; i < right.size(); i++) {
-            cout << right[i] << "\t\t" << seekTime[k] << endl;
-            k++;
-        }
-
-        cout << "---------Changed Direction---------" << endl;
-
-        for (int i = 0; i < left.size(); i++) {
-            cout << left[i] << "\t\t" << seekTime[k] << endl;
-            k++;
-        }
-
-        cout << "Total Seek Time: " << totalSeekTime << endl;
-        cout << "Throughput: " << static_cast<float>(n) / totalSeekTime << endl;
     } else {
-        cout << "Invalid direction entered. Please choose either 'left' or 'right'." << endl;
+        cout << "Invalid direction!" << endl;
         return 0;
     }
+
+    cout << "Pointer Movement: ";
+    for (int i = 0; i < j - 1; i++) {
+        cout << news[i] << " -> ";
+    }
+    cout << news[j - 1] << endl;
+    cout << "Total head movement: " << comp << " cylinders." << endl;
+    cout << "Throughput: " << (float)n / comp << endl;
 
     return 0;
 }
